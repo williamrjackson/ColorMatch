@@ -722,8 +722,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   matchColor: {r: 1, g: 0, b: 0, a: 1}
-  range: 0.4
-  realTime: 0
+  range: 0.15
+  saturationOffset: 0
+  valueOffset: 0
+  realTime: 1
   sourceImage: {fileID: 1488529031}
   targetImage: {fileID: 912930263}
 --- !u!4 &1628083543
