@@ -4,8 +4,12 @@ using UnityEngine.UI;
 public class ColorMatcher : MonoBehaviour 
 {
 	public Color matchColor = Color.red;
-    [Range(0, 3)]
-	public float range = .5f;
+    [Range(0, 1)]
+	public float range = .15f;
+    [Range(-1, 1)]
+    public float saturationOffset = 0f;
+    [Range(-1, 1)]
+    public float valueOffset = 0f;
     public bool realTime = false;
 	public Image sourceImage;
 	public Image targetImage;
@@ -47,7 +51,7 @@ public class ColorMatcher : MonoBehaviour
                 // Get the pixel color from the source
                 Color sourceColor = sourceImage.sprite.texture.GetPixel(x, y);
                 // If it's in range, set the coresponding pixel in the destination black, otherwise white.
-                Color destColor = ColorDifference(matchColor, sourceColor) < range ? matchColor : Color.white;
+                Color destColor = ColorDifference(matchColor, sourceColor, saturationOffset, valueOffset) < range ? matchColor : Color.white;
                 targetImage.sprite.texture.SetPixel(x, y, destColor);
             }
         }
@@ -84,16 +88,33 @@ public class ColorMatcher : MonoBehaviour
         targetImage.sprite.texture.Apply();
     }
 
-    private float ColorDifference(Color targetColor, Color testColor)
+    private float ColorDifference(Color targetColor, Color testColor, float satOffset = 0, float valOffset = 0)
 	{
         // https://en.wikipedia.org/wiki/Euclidean_distance
         // https://www.codeproject.com/Articles/1172815/Finding-Nearest-Colors-using-Euclidean-Distance
+
+        if (satOffset + valOffset != 0)
+        {
+            targetColor = StripSV(targetColor, satOffset, valOffset);
+            testColor = StripSV(testColor, satOffset, valOffset);
+        }
 
         float redDiff = testColor.r - targetColor.r;
 		float greenDiff = testColor.g - targetColor.g;
 		float blueDiff = testColor.b - targetColor.b;
 
-        float totalDiff = (redDiff * redDiff + greenDiff * greenDiff + blueDiff * blueDiff);
-        return totalDiff;
+        float totalDiff = redDiff * redDiff + greenDiff * greenDiff + blueDiff * blueDiff;
+        return totalDiff / 3;
 	}
+
+    private Color StripSV(Color inColor, float sOffset, float vOffset)
+    {
+        float colorH;
+        float colorS;
+        float colorV;
+
+        Color.RGBToHSV(inColor, out colorH, out colorS, out colorV);
+
+        return Color.HSVToRGB(colorH, Mathf.Clamp01(colorS + sOffset), Mathf.Clamp01(colorV + vOffset));
+    }
 }
